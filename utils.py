@@ -1,66 +1,70 @@
-import os
+import os 
 from io import BytesIO
 from PIL import Image
-from huggingface_hub import InferenceClient
+from google import genai
 from dotenv import load_dotenv
 
 
 load_dotenv()
 
-HF_TOKEN=os.getenv("HUGGINGFACE_API_KEY")
-GEN_MODEL=os.getenv("MODEL_TO_GENERATE")
-EDIT_MODEL=os.getenv("MODEL_TO_EDIT")
+API_KEY = os.getenv("GEMINI_API_KEY")
+MODEL = os.getenv("GEMINI_MODEL")
 
 
-if HF_TOKEN is None:
-    raise ValueError("HUGGINGFACE_TOKEN is not set in .env")
+if API_KEY is None:
+    raise ValueError("GEMINI_API_KEY is not set in .env")
 
-if GEN_MODEL is None:
-    raise ValueError("MODEL_TO_GENERATE is not set in .env")
+if MODEL is None:
+    raise ValueError("GEMINI_MODEL is not set in .env")
 
-if EDIT_MODEL is None:
-    raise ValueError("MODEL_TO_EDIT is not set in .env")
 
-def pil_to_bytes(img: Image.Image, fmt="PNG"):
-    """Convert a PIL image to raw bytes"""
-    buffer = BytesIO()
-    img.save(buffer, format=fmt)
-    buffer.seek(0)
-    return buffer.read()
+_client = genai.Client(api_key=API_KEY)
 
-def bytes_to_pil(data: bytes):
-    """Convert raw image bytes to a PIL image"""
-    return Image.open(BytesIO(data)).convert("RGB")
+
+def extract_image(response) -> Image.Image:
+    for cand in getattr(response, "candidates", []):
+        content = getattr(cand, "content", None)
+        if not content:
+            continue
+        for part in content.parts:
+            if hasattr(part, "inline_data") and part.inline_data and part.inline_data.data:
+                img_bytes = part.inline_data.data
+                return Image.open(BytesIO(img_bytes)).convert("RGBA")
+    raise ValueError("No image found in response.")
 
 def generate_image(prompt: str) -> Image.Image:
     """Generate an image using Text-prompt 
-    using Model from Huggingface 
+    Text ---> Image using Gemini 2.5 Flash
     """
     try:
         if not prompt or prompt.strip() == "":
             raise ValueError("Prompt cannot be empty")
 
-        client = InferenceClient(GEN_MODEL, token=HF_TOKEN)
+        # New HF client supports direct PIL images
+        response = _client.models.generate_content(
+            model=MODEL, 
+            contents=[prompt],
+            )
 
-        #New HF client supports direct PIL images
-        response = client.text_to_image(prompt)
-
-        return response  # Return the first generated image
+        return extract_image(response)  # Return the first generated image
     except Exception as e:
         print(f"Error generating image: {e}")
         raise
 
 def edit_image(prompt: str , base_image: Image.Image) -> Image.Image:
-    """Edit an existing image using prompt and use different model from huggingface"""
+    """Edit an existing image using prompt
+    Image + Text ---> Image using Gemini 2.5 Flash
+    """
     try:
         if not prompt or prompt.strip() == "":
             raise ValueError("Prompt cannot be empty")
-        
-        client = InferenceClient(EDIT_MODEL, token=HF_TOKEN)
-        # Send img+prompt to img2img pipeline
-        response = client.image_to_image(image=base_image, prompt=prompt)
 
-        return response
+        response = _client.models.generate_content(
+            model=MODEL,
+            contents=[prompt, base_image]
+        )
+
+        return extract_image(response)
     except Exception as e:
         print(f"Error editing image: {e}")
         raise

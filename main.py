@@ -5,7 +5,8 @@ from utils import generate_image, edit_image
 prompt = st.text_input("Your Prompt:")
 
 if st.button("Send"):
-    if st.session_state.get("last_image") is None:
+    if 'last_image' not in st.session_state:
+        st.session_state.last_image = None
         img = generate_image(prompt)
 
     else:
