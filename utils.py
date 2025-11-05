@@ -36,18 +36,32 @@ def generate_image(prompt: str) -> Image.Image:
     """Generate an image using Text-prompt 
     using Model from Huggingface 
     """
-    client = InferenceClient(GEN_MODEL, token=HF_TOKEN)
+    try:
+        if not prompt or prompt.strip() == "":
+            raise ValueError("Prompt cannot be empty")
 
-    #New HF client supports direct PIL images
-    response = client.text_to_image(prompt)
+        client = InferenceClient(GEN_MODEL, token=HF_TOKEN)
 
-    return response  # Return the first generated image
+        #New HF client supports direct PIL images
+        response = client.text_to_image(prompt)
+
+        return response  # Return the first generated image
+    except Exception as e:
+        print(f"Error generating image: {e}")
+        raise
 
 def edit_image(prompt: str , base_image: Image.Image) -> Image.Image:
     """Edit an existing image using prompt and use different model from huggingface"""
-    client = InferenceClient(EDIT_MODEL, token=HF_TOKEN)
-    # Send img+prompt to img2img pipeline
-    response = client.image_to_image(image=base_image, prompt=prompt)
+    try:
+        if not prompt or prompt.strip() == "":
+            raise ValueError("Prompt cannot be empty")
+        
+        client = InferenceClient(EDIT_MODEL, token=HF_TOKEN)
+        # Send img+prompt to img2img pipeline
+        response = client.image_to_image(image=base_image, prompt=prompt)
 
-    return response
+        return response
+    except Exception as e:
+        print(f"Error editing image: {e}")
+        raise
 
