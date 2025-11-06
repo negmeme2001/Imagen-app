@@ -25,10 +25,8 @@ The UI is built with **Streamlit**, and image generation/editing is done using *
 ## Models Used
 | Task | Model |
 |------|-------|
-| Text → Image | `gemini-2.0-flash-preview-image-generation` |
-| Image → Image (edit) | `gemini-2.5-flash` |
-
-Most image-capable models do **one** of these tasks, not both — so the app switches automatically based on whether an image is already present.
+| Text → Image | `gemini-2.5-flash-image` |
+| Image → Image (edit) | `gemini-2.5-flash-image` |
 
 ## Project Structure
 ```
