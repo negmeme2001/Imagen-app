@@ -1,31 +1,34 @@
-# ImageGen App — Summary
+# Imagen App — Text-to-Image and Image Editing with Google Gemini
 
-This is a small prototype app for generating and editing images using AI models.  
-The app is built with **Streamlit** as the UI and **HuggingFace Inference API** as the backend.
+This is a simple prototype app that generates images from text prompts and edits previously generated images using follow-up prompts.  
+The UI is built with **Streamlit**, and image generation/editing is done using **Google Gemini**.
 
-## What the App Does
-- I send a prompt → the app generates an image.  
-- I send another prompt → the app edits the previous image.  
-- Simple conversational flow (no extra generate/edit buttons).  
-- The app knows when to generate or when to edit based on whether an image already exists.
+---
 
-## Tech Used
-- **Python**
-- **Streamlit**
-- **HuggingFace Hub**
-- **uv** (dependency manager)
-- **Pillow**
-- `.env` for secret keys and model configs
+## What It Does
+- Write a prompt → the app generates an image.
+- Write another prompt → the app edits the **last generated image**.
+- A small gallery keeps all generated versions.
+
+---
+
+## Tech Stack
+- Python
+- Streamlit
+- Google Gemini API (`google-genai`)
+- Pillow (image handling)
+- `uv` for environment & dependency management
+- `.env` for API keys and model names
+
+---
 
 ## Models Used
-Two different models are used (because most models don’t do both tasks):
+| Task | Model |
+|------|-------|
+| Text → Image | `gemini-2.0-flash-preview-image-generation` |
+| Image → Image (edit) | `gemini-2.5-flash` |
 
-- **Text → Image:**  
-  `stabilityai/stable-diffusion-xl-base-1.0`
-
-- **Image → Image (edit):**  
-  `Qwen/Qwen-Image-Edit`  
-  (or any compatible img2img model)
+Most image-capable models do **one** of these tasks, not both — so the app switches automatically based on whether an image is already present.
 
 ## Project Structure
 ```
@@ -37,9 +40,26 @@ imagegen-app/
 └── pyproject.toml
 ```
 
+---
 
-## ✅ How It Works (Simple Flow)
-1. User writes a prompt.  
-2. If no image exists → generate a new one.  
-3. If an image already exists → edit it using the new prompt.  
-4. Images and conversation history are kept in session state.
+## Run the App Locally
+
+```bash
+# Clone the project
+git clone https://github.com/negmeme2001/Imagen-app.git
+cd Imagen-app
+
+# Install dependencies
+uv sync
+
+# Add your environment variables
+touch .env
+
+# Run the app
+streamlit run main.py
+```
+## Video demonstration:
+[Video](https://github.com/negmeme2001/Imagen-app/issues/1)
+
+
+Made by Mohamed Ahmed (Negm)
