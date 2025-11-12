@@ -25,4 +25,4 @@ jobs:
           OPENROUTER_LLM: ${{ secrets.OPENROUTER_LLM }}
           GITHUB_API_KEY: ${{ secrets.G_API_KEY }}
           GITHUB_REPO: ${{ secrets.G_REPO }}
-        run: python scripts/auto_rev.py
+        run: python scripts/auto_review.py
