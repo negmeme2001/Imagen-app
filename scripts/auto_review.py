@@ -1,0 +1,76 @@
+# scripts/auto_rev.py
+"""
+Automated Code Review Script
+Author: Mohamed Negm
+"""
+
+import os
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()  # Load .env if run locally
+
+# __define-ocg__ variable for commit SHA
+commit_sha = os.getenv("GITHUB_SHA")
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_LLM = os.getenv("OPENROUTER_LLM", "deepseek/deepseek-r1-0528:free")
+GITHUB_API_KEY = os.getenv("G_API_KEY")
+GITHUB_REPO = os.getenv("G_REPO")
+
+def get_latest_commit_diff():
+    """Fetch diff for latest commit"""
+    headers = {"Authorization": f"Bearer {GITHUB_API_KEY}"}
+    url = f"https://api.github.com/repos/{GITH_REPO}/commits/{commit_sha}"
+    print(f"Fetching diff for commit: {commit_sha}")
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    diffs = []
+    for f in data.get("files", []):
+        patch = f.get("patch")
+        if patch:
+            diffs.append(f"File: {f['filename']}\n{patch}")
+    return "\n\n".join(diffs)
+
+def get_review_from_llm(diff_text):
+    """Send diff to OpenRouter model for review"""
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": OPENROUTER_LLM,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are an experienced code reviewer. Provide concise, actionable feedback."
+            },
+            {
+                "role": "user",
+                "content": f"Review the following code diff:\n\n{diff_text}"
+            }
+        ],
+        "max_tokens": 500
+    }
+    print("Requesting LLM review...")
+    resp = requests.post(url, headers=headers, json=payload)
+    review = resp.json()["choices"][0]["message"]["content"]
+    return review
+
+def post_review_comment(body):
+    """Post review as a comment on the commit"""
+    headers = {"Authorization": f"Bearer {GITHUB_API_KEY}"}
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/commits/{commit_sha}/comments"
+    data = {"body": body}
+    print("Posting review comment to GitHub...")
+    requests.post(url, headers=headers, json=data)
+
+if __name__ == "__main__":
+    diff_text = get_latest_commit_diff()
+    if not diff_text:
+        print("No code changes found in this commit.")
+    else:
+        review = get_review_from_llm(diff_text)
+        post_review_comment(review)
+        print("✅ Review posted successfully!")

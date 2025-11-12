@@ -1,0 +1,28 @@
+name: Automated Code Review
+
+on:
+  push:
+    branches: [ "dev" ]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Run automated review
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_LLM: ${{ secrets.OPENROUTER_LLM }}
+          GITHUB_API_KEY: ${{ secrets.GITHUB_API_KEY }}
+          GITHUB_REPO: ${{ secrets.GITHUB_REPO }}
+        run: python scripts/auto_rev.py
