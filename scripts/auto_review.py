@@ -21,7 +21,7 @@ GITHUB_REPO = os.getenv("G_REPO")
 def get_latest_commit_diff():
     """Fetch diff for latest commit"""
     headers = {"Authorization": f"Bearer {GITHUB_API_KEY}"}
-    url = f"https://api.github.com/repos/{GITH_REPO}/commits/{commit_sha}"
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/commits/{commit_sha}"
     print(f"Fetching diff for commit: {commit_sha}")
     response = requests.get(url, headers=headers)
     data = response.json()
