@@ -23,6 +23,6 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENROUTER_LLM: ${{ secrets.OPENROUTER_LLM }}
-          GITHUB_API_KEY: ${{ secrets.GITHUB_API_KEY }}
-          GITHUB_REPO: ${{ secrets.GITHUB_REPO }}
+          GITHUB_API_KEY: ${{ secrets.G_API_KEY }}
+          GITHUB_REPO: ${{ secrets.G_REPO }}
         run: python scripts/auto_rev.py
