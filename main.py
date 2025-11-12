@@ -15,14 +15,12 @@ if "gallery" not in st.session_state:
 
 st.title("Imagen App - Text-to-Image and Image Editing with Google Gemini")
 
-prompt = st.text_input("Enter your Prompt:", "")
+prompt = st.text_input("Enter your prompt:", "")
 
-
-col1, col2 = st.columns([2, 1])
-
-
-with col1:
-    if st.button("Send"):
+if st.button("Send", use_container_width=True):
+    if prompt.strip() == "":
+        st.warning("Please enter a prompt first.")
+    else:
         with st.spinner("Generating... Please wait"):
             if st.session_state.last_image is None:
                 img = generate_image(prompt)
@@ -31,13 +29,10 @@ with col1:
                 img = edit_image(prompt, st.session_state.last_image)
 
             st.session_state.last_image = img
-            st.session_state.gallery.append(img)
+            st.session_state.gallery.append((prompt, img))
 
-    if st.session_state.last_image is not None:
-        st.image(st.session_state.last_image, width=700)
-
-
-with col2:
-    st.subheader("Gallery")
-    for idx, image in enumerate(st.session_state.gallery[::-1]):
-        st.image(image, width=150)
+# --- Chat-style Display ---
+for p, img in reversed(st.session_state.gallery):
+    st.markdown(f"**You:** {p}")
+    st.image(img, width=700)
+    st.markdown("---")
