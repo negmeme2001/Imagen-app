@@ -60,11 +60,23 @@ def get_review_from_llm(diff_text):
 
 def post_review_comment(body):
     """Post review as a comment on the commit"""
-    headers = {"Authorization": f"Bearer {GITHUB_API_KEY}"}
+    headers = {
+        "Authorization": f"Bearer {GITHUB_API_KEY}",
+        "Accept": "application/vnd.github.v3+json"
+    }
     url = f"https://api.github.com/repos/{GITHUB_REPO}/commits/{commit_sha}/comments"
     data = {"body": body}
-    print("Posting review comment to GitHub...")
-    requests.post(url, headers=headers, json=data)
+
+    print(f"📤 Posting review comment to: {url}")
+    resp = requests.post(url, headers=headers, json=data)
+
+    print(f"Response status: {resp.status_code}")
+    print(f"Response body: {resp.text}")
+
+    if resp.status_code == 201:
+        print("✅ Review comment successfully posted!")
+    else:
+        print("⚠️ Failed to post review comment.")
 
 if __name__ == "__main__":
     diff_text = get_latest_commit_diff()
