@@ -46,6 +46,7 @@ def get_review_from_llm(diff_text):
             }
         ]
     )
+    print(response)
     return response.choices[0].message.content
 
 def post_review_comment(body):
