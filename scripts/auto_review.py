@@ -7,6 +7,7 @@ Author: Mohamed Negm
 import os
 import requests
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()  # Load .env if run locally
 
@@ -17,6 +18,8 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_LLM = os.getenv("OPENROUTER_LLM", "deepseek/deepseek-r1-0528:free")
 GITHUB_API_KEY = os.getenv("G_API_KEY")
 GITHUB_REPO = os.getenv("G_REPO")
+
+_client = OpenAI(api_key=OPENROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
 
 def get_latest_commit_diff():
     """Fetch diff for latest commit"""
@@ -34,29 +37,16 @@ def get_latest_commit_diff():
 
 def get_review_from_llm(diff_text):
     """Send diff to OpenRouter model for review"""
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": OPENROUTER_LLM,
-        "messages": [
-            {
-                "role": "system",
-                "content": "You are an experienced code reviewer. Provide concise, actionable feedback."
-            },
+    response = _client.chat.completions.create(
+        model=OPENROUTER_LLM,
+        messages=[
             {
                 "role": "user",
                 "content": f"Review the following code diff:\n\n{diff_text}"
             }
-        ],
-        "max_tokens": 500
-    }
-    print("Requesting LLM review...")
-    resp = requests.post(url, headers=headers, json=payload)
-    review = resp.json()["choices"][0]["message"]["content"]
-    return review
+        ]
+    )
+    return response.choices[0].message.content
 
 def post_review_comment(body):
     """Post review as a comment on the commit"""
