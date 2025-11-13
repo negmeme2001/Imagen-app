@@ -43,3 +43,5 @@ for idx, (p, img) in enumerate(reversed(st.session_state.gallery)):
     st.sidebar.markdown(f"**Prompt {len(st.session_state.gallery) - idx}:** {p}")
     st.sidebar.image(img, use_column_width=True)
     st.sidebar.markdown("---")
+
+print("auto review test")
