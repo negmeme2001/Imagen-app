@@ -45,3 +45,6 @@ for idx, (p, img) in enumerate(reversed(st.session_state.gallery)):
     st.sidebar.markdown("---")
 
 print("auto review test")
+print("auto review test 2")
+
+
